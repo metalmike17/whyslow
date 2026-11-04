@@ -1,5 +1,5 @@
 Name:           whyslow
-Version:        0.1.0
+Version:        0.1.1
 Release:        1%{?dist}
 Summary:        Find out why your Linux system just stuttered, froze or crashed
 License:        GPL-3.0-or-later
@@ -55,5 +55,8 @@ echo "WhySlow installed. Start recording with:  whyslow enable" >&2 || :
 %{_datadir}/icons/hicolor/scalable/apps/io.github.metalmike17.WhySlow.svg
 
 %changelog
+* Wed Nov 04 2026 metalmike17 <michaeljg0717@gmail.com> - 0.1.1-1
+- GPU support for AMD (amdgpu) and Intel (i915, xe) alongside NVIDIA
+
 * Wed Nov 04 2026 metalmike17 <michaeljg0717@gmail.com> - 0.1.0-1
 - Initial package

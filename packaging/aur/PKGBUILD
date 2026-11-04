@@ -1,6 +1,6 @@
 # Maintainer: metalmike17 <michaeljg0717@gmail.com>
 pkgname=whyslow
-pkgver=0.1.0
+pkgver=0.1.1
 pkgrel=1
 pkgdesc="Find out why your Linux system just stuttered, froze or crashed"
 arch=('any')
@@ -12,7 +12,7 @@ optdepends=('mangohud: frame-time logs for the game stutter analysis'
             'nvidia-utils: GPU utilisation and thermal readings on NVIDIA')
 install=whyslow.install
 source=("$pkgname-$pkgver.tar.gz::$url/archive/v$pkgver.tar.gz")
-sha256sums=('9f4c14bcf298cf6958c2f9a1f13d40a0c82083d60eae11f823256e29914d84fd')
+sha256sums=('SKIP')   # pinned right after the tag is created
 
 build() {
   cd "$pkgname-$pkgver"
