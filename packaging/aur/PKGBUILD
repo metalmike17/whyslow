@@ -1,0 +1,35 @@
+# Maintainer: metalmike17 <michaeljg0717@gmail.com>
+pkgname=whyslow
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Find out why your Linux system just stuttered, froze or crashed"
+arch=('any')
+url="https://github.com/metalmike17/whyslow"
+license=('GPL-3.0-or-later')
+depends=('python' 'pyside6')
+makedepends=('python-build' 'python-installer' 'python-setuptools' 'python-wheel')
+optdepends=('mangohud: frame-time logs for the game stutter analysis'
+            'nvidia-utils: GPU utilisation and thermal readings on NVIDIA')
+install=whyslow.install
+source=("$pkgname-$pkgver.tar.gz::$url/archive/v$pkgver.tar.gz")
+sha256sums=('SKIP')   # replace with the real checksum once the v$pkgver tag exists
+
+build() {
+  cd "$pkgname-$pkgver"
+  python -m build --wheel --no-isolation
+}
+
+check() {
+  cd "$pkgname-$pkgver"
+  PYTHONPATH=. python -m unittest discover -s tests
+}
+
+package() {
+  cd "$pkgname-$pkgver"
+  python -m installer --destdir="$pkgdir" dist/*.whl
+  install -Dm644 packaging/whyslow-user.service "$pkgdir/usr/lib/systemd/user/whyslow.service"
+  install -Dm644 LICENSE -t "$pkgdir/usr/share/licenses/$pkgname/"
+  install -Dm644 data/io.github.metalmike17.WhySlow.desktop -t "$pkgdir/usr/share/applications/"
+  install -Dm644 data/io.github.metalmike17.WhySlow.metainfo.xml -t "$pkgdir/usr/share/metainfo/"
+  install -Dm644 data/io.github.metalmike17.WhySlow.svg -t "$pkgdir/usr/share/icons/hicolor/scalable/apps/"
+}

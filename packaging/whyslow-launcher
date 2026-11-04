@@ -1,0 +1,4 @@
+#!/usr/bin/python3
+import sys
+from whyslow.cli import main
+sys.exit(main())

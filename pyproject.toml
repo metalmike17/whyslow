@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "whyslow"
+version = "0.1.0"
+description = "Explain in plain English why your Linux system just stuttered"
+readme = "README.md"
+license = { text = "GPL-3.0-or-later" }
+authors = [{ name = "metalmike17" }]
+requires-python = ">=3.11"            # tomllib
+dependencies = []                      # the CLI is stdlib-only; the GUI needs PySide6
+
+[project.optional-dependencies]
+gui = ["PySide6"]
+
+[project.urls]
+Homepage = "https://github.com/metalmike17/whyslow"
+
+[project.scripts]
+whyslow = "whyslow.cli:main"
+
+[tool.setuptools]
+packages = ["whyslow"]
+
+[tool.setuptools.package-data]
+whyslow = ["data/*.toml"]

@@ -1,0 +1,12 @@
+#!/bin/sh
+# With no arguments the AppImage opens the window; with arguments it is the whyslow command line
+# (./WhySlow-x86_64.AppImage report, ... boot, ... enable).
+HERE="$(dirname "$(readlink -f "$0")")"
+PYV="$(ls "$HERE/usr/lib" | grep -m1 '^python3\.[0-9]*$' | sed 's/python//')"
+export PYTHONHOME="$HERE/usr"
+export PYTHONPATH="$HERE/usr/lib/python$PYV/site-packages"
+export PYTHONDONTWRITEBYTECODE=1
+export LD_LIBRARY_PATH="$HERE/usr/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+export XDG_DATA_DIRS="$HERE/usr/share:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
+[ $# -eq 0 ] && set -- gui
+exec "$HERE/usr/bin/python3" -m whyslow "$@"

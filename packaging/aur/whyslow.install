@@ -1,0 +1,4 @@
+post_install() {
+  echo "WhySlow installed. Start recording with:  whyslow enable"
+}
+post_upgrade() { :; }

@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=WhySlow
+GenericName=Slowdown Explainer
+Comment=Find out why your Linux system just stuttered, froze or crashed
+Exec=whyslow gui
+Icon=io.github.metalmike17.WhySlow
+Terminal=false
+Type=Application
+Categories=System;Monitor;
+Keywords=slow;stutter;lag;performance;freeze;crash;diagnose;battery;boot;
+StartupWMClass=whyslow

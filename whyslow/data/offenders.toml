@@ -1,0 +1,267 @@
+# Known slowdown culprits: what a process is, whether it is safe to stop, and what to do.
+#
+# Community-maintained — pull requests welcome! Keep entries factual and only list commands you
+# have verified. Fields:
+#   id      unique slug
+#   match   list of case-insensitive globs matched against the app/process name
+#   title   short human name
+#   what    one or two plain sentences: what it is and why it is busy
+#   safe    "wait"    = finite job, best to let it finish
+#           "pause"   = safe to pause or stop
+#           "caution" = stopping it midway can cause problems
+#           "kernel"  = kernel thread, not something you can stop
+#   impact  main resource it uses: cpu | disk | memory | network
+#   when    typical situation that triggers it (optional)
+#   fix     list of things you can do (optional)
+
+[[process]]
+id = "baloo"
+match = ["baloo_file", "baloo_file_extractor"]
+title = "Baloo (KDE file indexer)"
+what = "KDE's search indexer. It reads and indexes your files, so it is heavy on disk and CPU after you copy, download or install many files."
+safe = "pause"
+impact = "disk"
+when = "after installing a game or copying/extracting lots of files"
+fix = ["Pause it: `balooctl6 suspend` (Plasma 6) or `balooctl suspend` (Plasma 5)",
+       "Turn it off: `balooctl6 disable`, or System Settings → Search → File Search",
+       "Exclude big folders (game libraries, external drives) in System Settings → Search → File Search"]
+
+[[process]]
+id = "tracker"
+match = ["tracker-miner-fs*", "tracker-extract*", "localsearch*"]
+title = "Tracker / LocalSearch (GNOME file indexer)"
+what = "GNOME's search indexer. It scans and indexes files, which is heavy on disk and CPU after large file changes."
+safe = "pause"
+impact = "disk"
+fix = ["Limit what it scans: Settings → Search → Search Locations",
+       "Turn it off: `systemctl --user mask tracker-miner-fs-3.service localsearch-3.service`"]
+
+[[process]]
+id = "packagekit"
+match = ["packagekitd", "packagekit"]
+title = "PackageKit"
+what = "The background service behind graphical software centers. It refreshes package metadata and installs updates, and quits by itself when idle."
+safe = "wait"
+impact = "disk"
+
+[[process]]
+id = "dnf"
+match = ["dnf", "dnf5", "dnf-automatic", "dnf5daemon-server", "dnf-app-center-updater", "yum", "microdnf"]
+title = "DNF (Fedora package manager) / update checker"
+what = "Downloading, verifying and installing packages, or refreshing repository data. It is disk-, CPU- and network-heavy, and can overlap with games or installs."
+safe = "wait"
+impact = "disk"
+when = "after login (update check) or while installing/updating software"
+fix = ["Let the transaction finish — interrupting a package install can leave the system in a half-updated state",
+       "Run big updates when you are not gaming or installing something else"]
+
+[[process]]
+id = "apt"
+match = ["apt", "apt-get", "aptitude", "dpkg", "unattended-upgr*", "aptd", "update-manager"]
+title = "APT / automatic updates"
+what = "Package installation or automatic security updates. They are disk- and CPU-heavy while unpacking and configuring packages."
+safe = "caution"
+impact = "disk"
+fix = ["Let it finish — stopping dpkg midway can leave packages broken (`sudo dpkg --configure -a` repairs it)"]
+
+[[process]]
+id = "pacman"
+match = ["pacman", "yay", "paru", "pamac*"]
+title = "pacman / AUR helper"
+what = "Installing or updating packages (AUR helpers also compile software, which is CPU-heavy)."
+safe = "caution"
+impact = "cpu"
+fix = ["Let it finish — interrupting a transaction can leave the database locked or packages half-installed"]
+
+[[process]]
+id = "flatpak"
+match = ["flatpak", "flatpak-system-helper", "flatpak-portal"]
+title = "Flatpak"
+what = "Installing or updating Flatpak apps and runtimes. Large runtimes mean many files to unpack, which is heavy on disk."
+safe = "wait"
+impact = "disk"
+
+[[process]]
+id = "snapd"
+match = ["snapd", "snap", "snap-*"]
+title = "Snap"
+what = "Snap package refreshes (checked several times a day) and mounting of squashfs snap images."
+safe = "wait"
+impact = "disk"
+fix = ["Postpone refreshes: `sudo snap refresh --hold=24h`"]
+
+[[process]]
+id = "software-centers"
+match = ["gnome-software", "plasma-discover", "discover", "DiscoverNotifier", "discover-notifier*"]
+title = "Software center (update check)"
+what = "The graphical software center refreshing app and update information in the background."
+safe = "pause"
+impact = "network"
+fix = ["Quit it from the tray, or for GNOME Software: `gnome-software --quit`"]
+
+[[process]]
+id = "fwupd"
+match = ["fwupd", "fwupdmgr"]
+title = "fwupd (firmware updates)"
+what = "Refreshing firmware metadata or applying a device firmware update."
+safe = "wait"
+impact = "network"
+
+[[process]]
+id = "dracut"
+match = ["dracut", "mkinitcpio", "update-initramfs", "depmod", "kernel-install"]
+title = "Kernel / initramfs rebuild"
+what = "Regenerating the boot image after a kernel or driver update. It is CPU- and disk-heavy for a minute or two."
+safe = "caution"
+impact = "cpu"
+fix = ["Do not reboot or power off until it finishes — an interrupted rebuild can leave the system unbootable"]
+
+[[process]]
+id = "akmods"
+match = ["akmods", "akmodsbuild", "akmods-*"]
+title = "akmods (kernel module rebuild)"
+what = "Compiling third-party kernel modules (such as the NVIDIA driver) for a new kernel. It is CPU-heavy for a few minutes after a kernel update."
+safe = "caution"
+impact = "cpu"
+fix = ["Wait for it to finish before rebooting — rebooting mid-build can leave you without the NVIDIA driver",
+       "Check progress: `journalctl -u akmods -f`"]
+
+[[process]]
+id = "btrfs-maintenance"
+match = ["btrfs"]
+title = "btrfs maintenance (scrub / balance)"
+what = "A btrfs scrub (reads and verifies every block) or balance (rewrites data). Both saturate the disk for a long time."
+safe = "pause"
+impact = "disk"
+fix = ["See which: `sudo btrfs scrub status /` or `sudo btrfs balance status /`",
+       "Stop it: `sudo btrfs scrub cancel /` or `sudo btrfs balance cancel /` (scrub can resume later)"]
+
+[[process]]
+id = "btrfs-kernel"
+match = ["btrfs-transacti*", "btrfs-cleaner", "btrfs-delalloc*", "btrfs-endio*", "btrfs-worker*", "btrfs-flush*"]
+title = "btrfs housekeeping (kernel thread)"
+what = "Kernel threads of the btrfs filesystem: committing writes, and cleaning up deleted files or snapshots. Busy after heavy writes or after deleting many files/snapshots."
+safe = "kernel"
+impact = "disk"
+
+[[process]]
+id = "snapshots"
+match = ["snapperd", "snapper", "timeshift", "timeshift-gtk", "btrbk"]
+title = "Snapshot tool"
+what = "Creating, comparing or pruning filesystem snapshots. Pruning many old snapshots makes btrfs do a lot of background cleanup."
+safe = "wait"
+impact = "disk"
+
+[[process]]
+id = "updatedb"
+match = ["updatedb*", "plocate-updatedb", "mlocate*"]
+title = "updatedb (file-location database)"
+what = "A scheduled job that scans the whole filesystem to rebuild the `locate` database. It normally runs overnight but runs after boot if the PC was off."
+safe = "pause"
+impact = "disk"
+
+[[process]]
+id = "fstrim"
+match = ["fstrim"]
+title = "fstrim (SSD TRIM)"
+what = "Weekly job that tells SSDs which blocks are free. It is brief but can briefly stall disk-heavy work."
+safe = "wait"
+impact = "disk"
+
+[[process]]
+id = "journald"
+match = ["systemd-journald"]
+title = "systemd-journald (system log)"
+what = "Busy journald usually means some program is flooding the log."
+safe = "caution"
+impact = "disk"
+fix = ["Find the noisy source: `journalctl --since '-10min' -o cat | sort | uniq -c | sort -rn | head`"]
+
+[[process]]
+id = "coredump"
+match = ["systemd-coredump", "coredump*", "abrt*", "gnome-abrt", "apport*", "whoopsie"]
+title = "Crash handler"
+what = "A program crashed and the system is compressing its memory dump and collecting a report. Large programs make this slow."
+safe = "wait"
+impact = "disk"
+fix = ["See what crashed: `coredumpctl list`"]
+
+[[process]]
+id = "kswapd"
+match = ["kswapd*"]
+title = "kswapd (kernel memory reclaim)"
+what = "The kernel is freeing memory because RAM is nearly full. Constant high activity means you are short of RAM — it is a symptom, not a bug."
+safe = "kernel"
+impact = "memory"
+fix = ["Close memory-hungry apps (see the culprit list)", "Check you have swap or zram: `swapon --show`"]
+
+[[process]]
+id = "kcompactd"
+match = ["kcompactd*"]
+title = "kcompactd (kernel memory defragmentation)"
+what = "The kernel is defragmenting memory so it can allocate large blocks. Often appears alongside memory pressure."
+safe = "kernel"
+impact = "memory"
+
+[[process]]
+id = "ksoftirqd"
+match = ["ksoftirqd*"]
+title = "ksoftirqd (kernel interrupt handling)"
+what = "The kernel is handling a flood of interrupts, usually from heavy network or storage traffic."
+safe = "kernel"
+impact = "cpu"
+
+[[process]]
+id = "usb-storage"
+match = ["usb-storage", "usb-storage-*", "uas"]
+title = "USB drive transfer thread"
+what = "Kernel thread moving data to/from a USB drive. It is busy whenever a USB drive is being read or written, and a slow drive keeps it (and everything waiting on it) busy."
+safe = "kernel"
+impact = "disk"
+fix = ["If it is slow, check the drive is on a fast port: `lsusb -t` shows the speed (480M = USB 2, 5000M = USB 3)"]
+
+[[process]]
+id = "ntfs-3g"
+match = ["ntfs-3g", "mount.ntfs*", "ntfs-3g.*"]
+title = "ntfs-3g (user-space NTFS driver)"
+what = "The FUSE driver for NTFS drives. It copies every read and write through user space, so it is much slower and CPU-hungrier than a native driver."
+safe = "caution"
+impact = "cpu"
+fix = ["Linux 5.15+ has a faster in-kernel driver: mount with `-t ntfs3` (turn off Windows Fast Startup/hibernation first)"]
+
+[[process]]
+id = "steamwebhelper"
+match = ["steamwebhelper"]
+title = "Steam web helper"
+what = "Steam's built-in Chromium browser (store, library UI). It can use a lot of CPU, GPU and RAM, especially with GPU-accelerated rendering."
+safe = "pause"
+impact = "cpu"
+fix = ["Try Steam → Settings → Interface → turn off 'Enable GPU accelerated rendering in web views'",
+       "Closing the Steam window (not exiting) does not stop it; exit Steam fully when gaming elsewhere"]
+
+[[process]]
+id = "fossilize"
+match = ["fossilize_replay*", "fossilize-replay*"]
+title = "Fossilize (Steam shader pre-caching)"
+what = "Steam pre-compiling Vulkan shaders for your games. It uses many CPU cores for a while after game updates or driver changes."
+safe = "pause"
+impact = "cpu"
+fix = ["Limit it: Steam → Settings → Downloads → Shader Pre-Caching (turn off, or disable background processing of Vulkan shaders)"]
+
+[[process]]
+id = "wineserver"
+match = ["wineserver"]
+title = "wineserver"
+what = "Wine's per-prefix coordination process. It runs alongside any Wine/Proton program and uses CPU in proportion to the Windows program's system activity — it is usually not the root cause."
+safe = "caution"
+impact = "cpu"
+
+[[process]]
+id = "torrent"
+match = ["qbittorrent*", "transmission-*", "deluge*", "ktorrent", "rtorrent", "aria2c"]
+title = "Torrent client"
+what = "Torrent clients do many small random reads and writes plus hash checking, which is hard on hard drives and slows anything sharing the disk."
+safe = "pause"
+impact = "disk"
+fix = ["Pause or limit active torrents while you game or install software",
+       "Keep downloads on an SSD, or enable the client's disk cache option, if the disk is a hard drive"]

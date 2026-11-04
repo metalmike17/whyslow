@@ -1,0 +1,11 @@
+[Unit]
+Description=WhySlow background sampler (keeps 2 hours of system-health history)
+Documentation=https://github.com/metalmike17/whyslow
+
+[Service]
+ExecStart=/usr/bin/whyslow daemon
+Nice=10
+Restart=on-failure
+
+[Install]
+WantedBy=default.target

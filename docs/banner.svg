@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 300" width="1280" height="300" role="img" aria-label="WhySlow - find out why your Linux system just stuttered">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0D0F14"/><stop offset="1" stop-color="#07080C"/></linearGradient>
+    <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff"/></linearGradient>
+    <mask id="gm"><rect width="1280" height="300" fill="url(#fade)"/></mask>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#00C8D6" stroke-opacity=".2"/></pattern>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="glow2" x="-20%" y="-50%" width="140%" height="200%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <style>
+    .m{font-family:"JetBrains Mono","Fira Code","SF Mono",Consolas,"DejaVu Sans Mono",monospace}
+    @keyframes drift{from{transform:translateY(0)}to{transform:translateY(40px)}}
+    @keyframes ecg{from{stroke-dashoffset:900}to{stroke-dashoffset:0}}
+    @keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+    .drift{animation:drift 4s linear infinite}.ecg{stroke-dasharray:900;animation:ecg 3.2s linear infinite}.cur{animation:blink 1s steps(1) infinite}
+  </style>
+  <rect width="1280" height="300" fill="url(#bg)"/>
+  <g mask="url(#gm)"><rect class="drift" y="-40" width="1280" height="380" fill="url(#grid)"/></g>
+  <circle cx="150" cy="150" r="170" fill="#FF2BD6" fill-opacity=".07"/>
+  <circle cx="1120" cy="220" r="190" fill="#00C8D6" fill-opacity=".06"/>
+  <g filter="url(#glow)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M50 160H110L132 112L162 206L190 90L214 160H250" stroke="#00C8D6" stroke-width="9"/>
+    <circle cx="190" cy="90" r="8" fill="#FF2BD6" stroke="none"/>
+  </g>
+  <path class="ecg" d="M300 262H520L540 250L562 278L586 240L610 270L628 262H1180" fill="none" stroke="#FF2BD6" stroke-width="2.5" filter="url(#glow2)"/>
+  <g class="m">
+    <text x="300" y="150" font-size="92" font-weight="800" letter-spacing="8" fill="#F2F4F8" filter="url(#glow)">WHYSLOW</text>
+    <rect class="cur" x="1010" y="82" width="22" height="64" fill="#00C8D6"/>
+    <text x="304" y="198" font-size="22" letter-spacing="3" fill="#00C8D6">// WHY DID MY PC JUST STUTTER?</text>
+    <text x="304" y="228" font-size="15" letter-spacing="1" fill="#A9B4C2">black box · culprit finder · game stutter · hardware gotchas · battery · slow boot</text>
+  </g>
+</svg>
