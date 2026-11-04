@@ -12,6 +12,7 @@ import subprocess
 import time
 
 from . import battery, games
+from .gpu import GpuReader
 from .devices import MountMap, proc_devices
 
 CLK_TCK = os.sysconf("SC_CLK_TCK")
@@ -199,33 +200,6 @@ def read_cpu_temp() -> float | None:
 
 
 # --------------------------------------------------------------------------
-# GPU (NVIDIA only for now; polled less often because nvidia-smi is slow)
-# --------------------------------------------------------------------------
-_GPU_QUERY = ("utilization.gpu,temperature.gpu,clocks_throttle_reasons.active,"
-              "clocks_throttle_reasons.hw_thermal_slowdown,"
-              "clocks_throttle_reasons.sw_thermal_slowdown,"
-              "clocks_throttle_reasons.sw_power_cap,memory.used,memory.total")
-
-
-def read_gpu() -> dict | None:
-    if not shutil.which("nvidia-smi"):
-        return None
-    try:
-        out = subprocess.run(
-            ["nvidia-smi", f"--query-gpu={_GPU_QUERY}", "--format=csv,noheader,nounits"],
-            capture_output=True, text=True, timeout=2).stdout.strip().splitlines()[0]
-        f = [x.strip() for x in out.split(",")]
-        return {
-            "util": float(f[0]), "temp": float(f[1]),
-            "hw_thermal": f[3] == "Active", "sw_thermal": f[4] == "Active",
-            "power_cap": f[5] == "Active",
-            "mem_used": float(f[6]), "mem_total": float(f[7]),
-        }
-    except (subprocess.SubprocessError, IndexError, ValueError, OSError):
-        return None
-
-
-# --------------------------------------------------------------------------
 # per-process, aggregated into apps
 # --------------------------------------------------------------------------
 def read_procs() -> dict[int, dict]:
@@ -273,6 +247,7 @@ class Sampler:
         self._gpu_every = gpu_every
         self._tick = 0
         self._gpu: dict | None = None
+        self._gpureader = GpuReader()
         self._mm = MountMap()
         self._devcache: dict[int, tuple[float, dict[str, int]]] = {}
 
@@ -345,7 +320,7 @@ class Sampler:
         prev, self._prev = self._prev, cur
         self._tick += 1
         if self._tick % self._gpu_every == 1:
-            self._gpu = read_gpu()
+            self._gpu = self._gpureader.read()
         if prev is None:
             return None
 

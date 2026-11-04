@@ -122,6 +122,12 @@ class ContextTests(unittest.TestCase):
             self.assertAlmostEqual(c["brightness"], 0.9); self.assertTrue(c["dgpu_awake"])
             mk(t, "bus/pci/devices/0000:01:00.0/power", runtime_status="suspended")
             self.assertFalse(b.context(t)["dgpu_awake"])
+            for vendor in ("0x1002", "0x8086"):                    # AMD / Intel Arc discrete GPUs count too
+                mk(t, "bus/pci/devices/0000:01:00.0", vendor=vendor)
+                mk(t, "bus/pci/devices/0000:01:00.0/power", runtime_status="active")
+                self.assertTrue(b.context(t)["dgpu_awake"], vendor)
+            mk(t, "bus/pci/devices/0000:01:00.0", boot_vga="1")      # the integrated/boot GPU is not the "discrete" one
+            self.assertFalse(b.context(t)["dgpu_awake"])
 
 
 if __name__ == "__main__":

@@ -90,6 +90,11 @@ class Verdicts(unittest.TestCase):
         v = bb.diagnose(run(60), journal(hit("gpu", "NVRM: Xid (PCI:0000:01:00): 79, GPU has fallen off the bus")))
         self.assertEqual(v["category"], "gpu")
 
+    def test_intel_xe_hang_pattern(self):
+        self.assertTrue(bb.JOURNAL_PATTERNS["gpu"].search("xe 0000:03:00.0: [drm] GT reset started"))
+        self.assertTrue(bb.JOURNAL_PATTERNS["gpu"].search("xe 0000:00:02.0: Timedout job: seqno=1"))
+        self.assertIsNone(bb.JOURNAL_PATTERNS["gpu"].search("systemd[1]: Started exec-helper.service"))
+
     def test_thermal_from_temperature_alone_is_medium_confidence(self):
         v = bb.diagnose(run(60, temp=104), journal())
         self.assertEqual((v["category"], v["confidence"]), ("thermal", "medium"))

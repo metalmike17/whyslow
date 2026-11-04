@@ -93,9 +93,10 @@ def context(root: str = "/sys", run=None) -> dict:
             break
     out["dgpu_awake"] = False
     for d in glob.glob(f"{root}/bus/pci/devices/*"):
-        if _r(f"{d}/vendor") == "0x10de" and _r(f"{d}/class").startswith("0x03") and _r(f"{d}/power/runtime_status") == "active":
-            boot_vga = _r(f"{d}/boot_vga") == "1"
-            out["dgpu_awake"] = not boot_vga
+        # a display-class device that is not the boot (integrated) GPU and is powered on: NVIDIA, AMD or Intel Arc
+        if (_r(f"{d}/vendor") in ("0x10de", "0x1002", "0x8086") and _r(f"{d}/class").startswith("0x03")
+                and _r(f"{d}/boot_vga") != "1" and _r(f"{d}/power/runtime_status") == "active"):
+            out["dgpu_awake"] = True
     return out
 
 
@@ -167,8 +168,8 @@ def analyze(samples: list[dict], bat_info: dict | None = None, ctx: dict | None 
     r.culprits = r.culprits[:5]
     ctx = ctx or {}
     if ctx.get("dgpu_awake"):
-        r.notes.append("The discrete GPU is powered on, which typically costs 5–15 W. Something is keeping it awake "
-                       "(check `nvidia-smi` for processes; on hybrid laptops run apps on the integrated GPU unless they need the big one).")
+        r.notes.append("The discrete GPU is powered on, which typically costs several watts. Something is keeping it awake "
+                       "(`nvidia-smi` lists the programs using an NVIDIA GPU; on hybrid laptops run apps on the integrated GPU unless they need the big one).")
     if ctx.get("brightness", 0) >= BRIGHT_HIGH:
         r.notes.append(f"Screen brightness is {ctx['brightness']:.0%}; the display is often the biggest single drain. Lowering it is the cheapest win.")
     if bat_info and bat_info.get("health") is not None and bat_info["health"] < 0.8:

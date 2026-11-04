@@ -33,7 +33,7 @@ JOURNAL_PATTERNS = {
     "kernel": re.compile(r"Kernel panic|\bBUG: |\bOops: |Call Trace:|hung_task|blocked for more than \d+ seconds|"
                          r"soft lockup|hard LOCKUP|rcu.*detected stalls"),
     "gpu": re.compile(r"NVRM: Xid|amdgpu.*(ring .* timeout|GPU reset|gpu hang|VM_L2_PROTECTION_FAULT)|GPU HANG|"
-                      r"i915.*(GPU hang|Resetting)|nouveau.*(fault|timeout)", re.I),
+                      r"i915.*(GPU hang|Resetting)|\bxe\b.*(GT reset|Timedout job)|nouveau.*(fault|timeout)", re.I),
     "thermal": re.compile(r"critical temperature reached|Package temperature above threshold|"
                           r"thermal.*(shutting down|shutdown)"),
     "hardware": re.compile(r"\[Hardware Error\]|Machine check events logged|mce: .*(uncorrect|fatal)|"

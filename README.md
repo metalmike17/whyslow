@@ -36,7 +36,7 @@ $ whyslow
 ## How it works
 - `whyslow daemon` samples once a second (~2% of one core): kernel PSI stall
   percentages, per-app CPU / disk / page-fault / RSS (grouped by systemd cgroup),
-  per-disk busy%, CPU clocks + temperature, swap and reclaim counters, NVIDIA GPU throttling.
+  per-disk busy%, CPU clocks + temperature, swap and reclaim counters, GPU load/temperature/throttling (NVIDIA, AMD and Intel).
 - `whyslow` finds stall episodes in recent history, classifies them
   (I/O, real RAM shortage, page-in from slow disk, CPU contention) and names culprits.
 - No root, no eBPF, no dependencies beyond Python 3.11+ (PySide6 for the window).
@@ -75,7 +75,7 @@ report (`~/.local/state/whyslow/incidents/`) and the GUI notifies you.
     python3 -m whyslow postmortem        # explain the last unexpected shutdown
 
 - Tells a **whole-system** death (freeze, reset, power loss, OOM thrash) from the **sampler** merely dying.
-- Searches the kernel journal around the last sample for OOM kills, GPU hangs (NVIDIA Xid / amdgpu),
+- Searches the kernel journal around the last sample for OOM kills, GPU hangs (NVIDIA Xid / amdgpu / i915 / xe),
   overheating, kernel lockups, machine-check errors and disk errors.
 - Honest about uncertainty: if everything looked normal until the last sample it says so
   ("power loss, manual reset, or a silent lockup") with *low* confidence rather than guessing.
@@ -157,7 +157,10 @@ are not well-known. It is automatic redaction, not a guarantee: skim it before p
     python3 -m unittest discover -s tests
 
 ## Known gaps
-- NVIDIA GPU only (no AMD/Intel GPU throttle detection yet).
+- GPU: NVIDIA is verified on real hardware. **AMD (amdgpu) and Intel (i915/xe) support was written from the kernel
+  documentation and is tested only against simulated sysfs trees**: reports from real cards are very welcome.
+  AMD thermal throttling is inferred from the temperature nearing the card's critical limit; Intel utilisation is
+  derived from RC6 residency (no root-only counters), and Intel shared memory is not reported.
 - Some helper processes outside an app cgroup keep generic names (e.g. "Browser").
 - Culprits are correlational (who was busy during the stall), not causal; eBPF
   (per-process block-I/O latency, off-CPU time) would sharpen this.

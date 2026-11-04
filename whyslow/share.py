@@ -163,9 +163,13 @@ def _gpu_names() -> list[str]:
             r = subprocess.run(["nvidia-smi", "--query-gpu=name,driver_version", "--format=csv,noheader"],
                                capture_output=True, text=True, timeout=3).stdout.strip().splitlines()
             out += [x.replace(",", " driver") for x in r if x]
-        if not out and shutil.which("lspci"):
+        if shutil.which("lspci"):          # AMD and Intel GPUs (and NVIDIA when nvidia-smi is missing)
             r = subprocess.run(["lspci"], capture_output=True, text=True, timeout=3).stdout.splitlines()
-            out += [re.sub(r"^\S+\s+[^:]+:\s*", "", l) for l in r if re.search(r"VGA|3D controller", l)]
+            for l in r:
+                if re.search(r"VGA|3D controller|Display controller", l):
+                    name = re.sub(r"^\S+\s+[^:]+:\s*", "", l)
+                    if not (out and re.search(r"nvidia", name, re.I)):
+                        out.append(name)
     except (OSError, subprocess.SubprocessError):
         pass
     return out
