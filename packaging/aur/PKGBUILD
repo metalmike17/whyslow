@@ -12,7 +12,7 @@ optdepends=('mangohud: frame-time logs for the game stutter analysis'
             'nvidia-utils: GPU utilisation and thermal readings on NVIDIA')
 install=whyslow.install
 source=("$pkgname-$pkgver.tar.gz::$url/archive/v$pkgver.tar.gz")
-sha256sums=('SKIP')   # pinned right after the tag is created
+sha256sums=('367cf1c56e4eb1536db5bf4435878c09dd69de99ab2bc8ba53e96080bb184c57')
 
 build() {
   cd "$pkgname-$pkgver"
